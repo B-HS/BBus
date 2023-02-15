@@ -1,7 +1,7 @@
 import { Entypo } from "@expo/vector-icons";
 import { useState } from "react";
 import { FlatList, StyleSheet, TextInput } from "react-native";
-import { Text, View } from "react-native-ui-lib";
+import { View } from "react-native-ui-lib";
 import BusCard from "./BusCard";
 
 const Body = () => {
@@ -10,10 +10,10 @@ const Body = () => {
     return (
         <View style={styles.container}>
             <View style={styles.searchArea}>
-                <Entypo name="magnifying-glass" size={24} color="black" style={{marginRight:15}} />
+                <Entypo name="magnifying-glass" size={24} color="black" style={{ marginRight: 15 }} />
                 <TextInput style={styles.input} onChangeText={onChangeSearch} value={Search} placeholder="버스 혹은 목적지" keyboardType="number-pad" />
             </View>
-            <FlatList style={styles.flatList} data={tmpData} renderItem={({ item }) => <BusCard busId={item.key}/>} />
+            <FlatList style={styles.flatList} data={tmpData} renderItem={({ item }) => <BusCard busId={item.key} />} />
         </View>
     );
 };
@@ -27,8 +27,8 @@ const styles = StyleSheet.create({
         height: 75,
     },
     flatList: {
-        paddingTop:10,
-        paddingHorizontal:10
+        paddingTop: 10,
+        paddingHorizontal: 10,
     },
     searchArea: {
         flexDirection: "row",
