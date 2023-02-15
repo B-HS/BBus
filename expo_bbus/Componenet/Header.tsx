@@ -27,8 +27,8 @@ const Header = () => {
     const getLocation = async () => {
         await requestPermissions();
         if (errorMsg.length > 0) {
-            console.log(errorMsg);
-            console.log("aa");
+            alert(errorMsg);
+            alert("aa");
         } else {
             // JSON.stringify(location) <<위치정보
         }
