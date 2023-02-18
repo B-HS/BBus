@@ -4,22 +4,19 @@ import { LocationObject } from "expo-location";
 import React, { useEffect, useState } from "react";
 import { StyleSheet, Text, TouchableOpacity } from "react-native";
 import { View } from "react-native-ui-lib";
-import BusLocation, { StationListDetail, StationArriveDetail } from "../Utility/BusLocation";
-
-export interface UIArriveInfoText{
-    busNum: number;
-    
-
-}
+import { RefectoredBusInfo, StationArriveDetail, StationListDetail, UIArriveInfoText } from "../types/busifno";
+import BusLocation from "../store/action/BusLocationAction";
+import { useAppDispatch } from "../store/config";
+import { setBusList } from "../store/slice/busSlice";
 
 const Header = () => {
-    const [busInfoList, setBusInfoList] = useState<any[]>([]);
-    const [busArriveInfo, setBusArriveInfo] = useState<StationArriveDetail[]>([]);
-    const [busStationInfo, setBusStationInfo] = useState<StationListDetail[]>([]);
     const [errorMsg, setErrorMsg] = useState<string>("");
     const [currentLocation, setCurrentLocation] = useState<string>("현재위치");
+    const [busInfoList, setBusInfoList] = useState<RefectoredBusInfo[]>([]);
+    const [busArriveInfo, setBusArriveInfo] = useState<StationArriveDetail[]>([]);
+    const [busStationInfo, setBusStationInfo] = useState<StationListDetail[]>([]);
     const [currentStationInfo, setCurrentStationInfo] = useState<StationListDetail>();
-    const [currentUIArriveInfoText, setCurrentUIArriveInfoText] = useState();
+    const dispatch = useAppDispatch();
     const requestPermissions = async () => {
         let { status: foregroundStatus } = await Location.requestForegroundPermissionsAsync();
         if (foregroundStatus !== "granted") {
@@ -35,17 +32,22 @@ const Header = () => {
         }
     };
 
+    const setBusUIInfo = () => {
+        const result = BusLocation.completeUIArriveInfo(busArriveInfo, busInfoList, busStationInfo);
+        dispatch(setBusList(result));
+    };
+
     const getBusArriveInfo = async () => {
-        if (currentStationInfo && currentStationInfo.STATION_ID>0) {
+        if (currentStationInfo && currentStationInfo.STATION_ID > 0) {
             const info = await BusLocation.getBusArriveInfoByStationId(currentStationInfo.STATION_ID);
-            setBusArriveInfo(()=>[...info])
+            setBusArriveInfo(() => [...info]);
         }
     };
 
-    const getBusInfoList = async () =>{
-        const info = await BusLocation.getBusInfoList()
-        setBusInfoList(()=>[...info])
-    }
+    const getBusInfoList = async () => {
+        const info = await BusLocation.getBusInfoList();
+        setBusInfoList(() => [...info]);
+    };
 
     const getBusStationInfo = async () => {
         const info: StationListDetail[] = await BusLocation.getBusstationInformation();
@@ -64,7 +66,7 @@ const Header = () => {
     };
     useEffect(() => {
         getBusStationInfo();
-        getBusInfoList()
+        getBusInfoList();
     }, []);
 
     useEffect(() => {
@@ -77,12 +79,10 @@ const Header = () => {
         getBusArriveInfo();
     }, [currentStationInfo]);
 
-    useEffect(()=>{
-        // console.log(busArriveInfo);
-        console.log(busInfoList);
-        
-    },[busArriveInfo, busInfoList])
-    
+    useEffect(() => {
+        setBusUIInfo();
+    }, [busArriveInfo, busInfoList]);
+
     return (
         <View style={styles.header}>
             <SimpleLineIcons name="menu" size={24} color="black" />

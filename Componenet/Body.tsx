@@ -2,18 +2,20 @@ import { Entypo } from "@expo/vector-icons";
 import { useState } from "react";
 import { FlatList, StyleSheet, TextInput } from "react-native";
 import { View } from "react-native-ui-lib";
+import { useAppSelector } from "../store/config";
 import BusCard from "./BusCard";
 
 const Body = () => {
     const [Search, onChangeSearch] = useState<string>("");
     const tmpData = [{ key: "113" }, { key: "115" }, { key: "110" }, { key: "111" }, { key: "112" }, { key: "116" }, { key: "120" }, { key: "54" }, { key: "250" }, { key: "253" }];
+    const busInfo = useAppSelector(state=>state.busSlice)
     return (
         <View style={styles.container}>
             <View style={styles.searchArea}>
                 <Entypo name="magnifying-glass" size={24} color="black" style={{ marginRight: 15 }} />
                 <TextInput style={styles.input} onChangeText={onChangeSearch} value={Search} placeholder="버스 혹은 목적지" keyboardType="number-pad" />
             </View>
-            <FlatList style={styles.flatList} data={tmpData} renderItem={({ item }) => <BusCard busId={item.key} />} />
+            <FlatList style={styles.flatList} data={busInfo.busList} renderItem={({ item }) => <BusCard busInfo={item} />} />
         </View>
     );
 };
