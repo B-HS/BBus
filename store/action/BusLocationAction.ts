@@ -1,8 +1,8 @@
 import { XMLParser } from "fast-xml-parser";
 import { PRIVATE_KEY } from "@env";
-import { BusInfo, RefectoredBusInfo, StationArriveDetail, StationListDetail, UIArriveInfoText } from "../../types/busifno";
+import { busDetailInfo, BusInfo, RefectoredBusInfo, StationArriveDetail, StationListDetail, UIArriveInfoText } from "../../types/businfo";
 const parser = new XMLParser();
-const completeUIArriveInfo = (arriveInfo: StationArriveDetail[], refectoredBusinfo: RefectoredBusInfo[], stationInfo: StationListDetail[]) => {
+const completeUIArriveInfo = async (arriveInfo: StationArriveDetail[], refectoredBusinfo: RefectoredBusInfo[], stationInfo: StationListDetail[]) => {
     const actualArrivingBusList: StationArriveDetail[] = arriveInfo.filter((v) => v.ARRV_VH_ID !== 0);
     const resultInfo: UIArriveInfoText[] = [];
     for (const arvList of actualArrivingBusList) {
@@ -12,34 +12,37 @@ const completeUIArriveInfo = (arriveInfo: StationArriveDetail[], refectoredBusin
                 resultInfo.push({
                     name: v.busNumber,
                     leftCount: arvList.LEFT_STATION,
-                    endLocation: stationInfo.filter((loc) => loc.STATION_ID == v.lastStationNumber)[0].STATION_NM,
+                    endLocation: "보류",
                     currentLocation: "보류",
                     leftTime: Math.round(arvList.PREDICT_TRAV_TM / 60),
                 });
             });
     }
-
-    console.log("========================================");
-    resultInfo.forEach((v) => console.log(v));
-    // actualArrivingBusList.forEach(v=>console.log(v))
-    // stationInfo.forEach(v=>console.log(v))
-    console.log("========================================");
     return resultInfo
+        .sort(function (a, b) {
+            return (a.name as number) - (b.name as number);
+        })
+        .sort(function (a, b) {
+            return a.leftTime - b.leftTime;
+        });
 };
 
 const getBusstationInformation = async () => {
-    return fetch(`http://openapi.changwon.go.kr/rest/bis/Station/?serviceKey=${PRIVATE_KEY}&`)
+    return await fetch(`http://openapi.changwon.go.kr/rest/bis/Station/?serviceKey=${PRIVATE_KEY}&`)
         .then((res) => res.text())
         .then((res) => parser.parse(res).ServiceResult.MsgBody.StationList.row)
         .then((res) => {
-            let newJsonObj: any[] = [];
+            let newJsonObj: StationListDetail[] = [];
             newJsonObj.push(JSON.parse(JSON.stringify(res)));
             return JSON.parse(JSON.stringify(newJsonObj[0]));
         });
 };
 
 const getBusInfoList = async () => {
-    return fetch(`http://openapi.changwon.go.kr/rest/bis/Bus/?serviceKey=${PRIVATE_KEY}&`)
+    // const info: busDetailInfo[] = await fetch(`http://openapi.changwon.go.kr/rest/bis/BusInfo/?serviceKey=${PRIVATE_KEY}`)
+    //     .then((res) => res.text())
+    //     .then((res) => parser.parse(res).ServiceResult.MsgBody.BusInfoList.row);
+    return await fetch(`http://openapi.changwon.go.kr/rest/bis/Bus/?serviceKey=${PRIVATE_KEY}&`)
         .then((res) => res.text())
         .then((res) => parser.parse(res).ServiceResult.MsgBody.BusList.row)
         .then((res) => {
@@ -64,8 +67,25 @@ const getBusInfoList = async () => {
         });
 };
 
+/** BUSPOSITION 받아서 비교해보고 다시시작
+ * http://openapi.changwon.go.kr/rest/bis/BusPosition/?serviceKey=${PRIVATE_KEY}&route=${ROUTE_ID}
+ */
+
+
+
+const getBusLocationDetail = async (routeId: number) => {
+    return await fetch(`http://openapi.changwon.go.kr/rest/bis/BusLocation/?serviceKey=${PRIVATE_KEY}&route=${routeId}`)
+        .then((res) => res.text())
+        .then(async (res) => parser.parse(res).ServiceResult.MsgBody.BusLocationList.row)
+        .then((res) => {
+            let newJsonObj: any[] = [];
+            newJsonObj.push(JSON.parse(JSON.stringify(res)));
+            return JSON.parse(JSON.stringify(newJsonObj[0]));
+        });
+};
+
 const getBusArriveInfoByStationId = async (stationId: number) => {
-    return fetch(`http://openapi.changwon.go.kr/rest/bis/BusArrives/?serviceKey=${PRIVATE_KEY}&station=${stationId}`)
+    return await fetch(`http://openapi.changwon.go.kr/rest/bis/BusArrives/?serviceKey=${PRIVATE_KEY}&station=${stationId}`)
         .then((res) => res.text())
         .then(async (res) => parser.parse(res).ServiceResult.MsgBody.ArriveInfoList.row)
         .then((res) => {

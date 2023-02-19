@@ -1,6 +1,6 @@
 import type { PayloadAction } from "@reduxjs/toolkit";
 import { createSlice } from "@reduxjs/toolkit";
-import { UIArriveInfoText } from "../../types/busifno";
+import { UIArriveInfoText } from "../../types/businfo";
 
 interface busInfo {
     busList: UIArriveInfoText[];

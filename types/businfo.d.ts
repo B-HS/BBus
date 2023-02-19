@@ -24,6 +24,8 @@ export interface RefectoredBusInfo {
     govName: string;
     lastStationNumber: number;
     startStationNumber: number;
+    upStationName: string;
+    downStationName: string;
 }
 
 export interface BusInfo {
@@ -44,8 +46,27 @@ export interface BusInfo {
 
 export interface UIArriveInfoText {
     name: number | string;
-    leftTime: number | string;
+    leftTime: number;
     leftCount: number;
     currentLocation: string;
     endLocation: string;
+}
+
+export interface busDetailInfo {
+    ROUTE_ID: number;
+    ROUTE_NM: string;
+    UP_DST_NM: string;
+    DN_DST_NM: string;
+    N_UFT: string;
+    N_ULT: string;
+    N_DFT: string;
+    N_DLT: string;
+    N_MIN: string;
+    N_MAX: string;
+    H_UFT: string;
+    H_ULT: string;
+    H_DFT: string;
+    H_DLT: string;
+    H_MIN: string;
+    H_MAX: string;
 }

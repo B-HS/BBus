@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { StyleSheet } from "react-native";
 import { Card, View } from "react-native-ui-lib";
-import { UIArriveInfoText } from "../types/busifno";
+import { UIArriveInfoText } from "../types/businfo";
 import AlarmModal from "./AlarmModal";
 
 interface busCardProps {
@@ -29,7 +29,7 @@ const BusCard = ({busInfo}: busCardProps) => {
                     <Card.Section content={[{ text: `${busInfo.endLocation} 방면`, text80: true }]} />
                 </View>
                 <View style={styles.detailSection}>
-                    <Card.Section content={[{ text: `${busInfo.leftTime==2?"잠시 후":"약 " + busInfo.leftTime+"분"}`, text50: true }]} />
+                    <Card.Section content={[{ text: `${busInfo.leftTime<3?"잠시 후":"약 " + busInfo.leftTime+"분"}`, text50: true }]} />
                     
                     <Card.Section content={[{ text: `${busInfo.leftCount}번째 전`, text80: true }]} />
                 </View>

@@ -4,7 +4,7 @@ import { LocationObject } from "expo-location";
 import React, { useEffect, useState } from "react";
 import { StyleSheet, Text, TouchableOpacity } from "react-native";
 import { View } from "react-native-ui-lib";
-import { RefectoredBusInfo, StationArriveDetail, StationListDetail, UIArriveInfoText } from "../types/busifno";
+import { RefectoredBusInfo, StationArriveDetail, StationListDetail, UIArriveInfoText } from "../types/businfo";
 import BusLocation from "../store/action/BusLocationAction";
 import { useAppDispatch } from "../store/config";
 import { setBusList } from "../store/slice/busSlice";
@@ -32,8 +32,8 @@ const Header = () => {
         }
     };
 
-    const setBusUIInfo = () => {
-        const result = BusLocation.completeUIArriveInfo(busArriveInfo, busInfoList, busStationInfo);
+    const setBusUIInfo = async () => {
+        const result = await BusLocation.completeUIArriveInfo(busArriveInfo, busInfoList, busStationInfo);
         dispatch(setBusList(result));
     };
 
