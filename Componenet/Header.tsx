@@ -1,13 +1,13 @@
-import { AntDesign, MaterialCommunityIcons, SimpleLineIcons } from "@expo/vector-icons";
+import { AntDesign, MaterialCommunityIcons, SimpleLineIcons, Feather } from "@expo/vector-icons";
 import * as Location from "expo-location";
 import { LocationObject } from "expo-location";
-import React, { useEffect, useState } from "react";
-import { StyleSheet, Text, TouchableOpacity } from "react-native";
+import React, { useEffect, useRef, useState } from "react";
+import { Animated, Easing, StyleSheet, Text, TouchableOpacity } from "react-native";
 import { View } from "react-native-ui-lib";
 import { RefectoredBusInfo, StationArriveDetail, StationListDetail, UIArriveInfoText } from "../types/businfo";
 import BusLocation from "../store/action/BusLocationAction";
-import { useAppDispatch } from "../store/config";
-import { setBusList } from "../store/slice/busSlice";
+import { useAppDispatch, useAppSelector } from "../store/config";
+import { setBusList, setLoading } from "../store/slice/busSlice";
 
 const Header = () => {
     const [errorMsg, setErrorMsg] = useState<string>("");
@@ -16,8 +16,11 @@ const Header = () => {
     const [busArriveInfo, setBusArriveInfo] = useState<StationArriveDetail[]>([]);
     const [busStationInfo, setBusStationInfo] = useState<StationListDetail[]>([]);
     const [currentStationInfo, setCurrentStationInfo] = useState<StationListDetail>();
+    const spinValue = useRef(new Animated.Value(0)).current;
+    const busSlice = useAppSelector((state) => state.busSlice);
     const dispatch = useAppDispatch();
     const requestPermissions = async () => {
+        dispatch(setLoading(true));
         let { status: foregroundStatus } = await Location.requestForegroundPermissionsAsync();
         if (foregroundStatus !== "granted") {
             setErrorMsg("location denied");
@@ -31,9 +34,21 @@ const Header = () => {
             }
         }
     };
+    Animated.loop(
+        Animated.timing(spinValue, {
+            toValue: 1,
+            duration: 10000,
+            useNativeDriver: true
+        })
+    ).start();
+    
+    const spin = spinValue.interpolate({
+        inputRange: [0, 1],
+        outputRange: ["0deg", "720deg"],
+    });
 
     const setBusUIInfo = async () => {
-        const result = await BusLocation.completeUIArriveInfo(busArriveInfo, busInfoList, busStationInfo);
+        const result = await BusLocation.completeUIArriveInfo(busArriveInfo, busInfoList);
         dispatch(setBusList(result));
     };
 
@@ -50,6 +65,8 @@ const Header = () => {
     };
 
     const getBusStationInfo = async () => {
+        dispatch(setLoading(true));
+        spinValue.resetAnimation()
         const info: StationListDetail[] = await BusLocation.getBusstationInformation();
         setBusStationInfo(() => [...info]);
     };
@@ -80,12 +97,14 @@ const Header = () => {
     }, [currentStationInfo]);
 
     useEffect(() => {
-        setBusUIInfo();
-    }, [busArriveInfo, busInfoList]);
-
+        setBusUIInfo().then(() => {
+            dispatch(setLoading(false))
+            spinValue.stopAnimation()
+        });
+    }, [busArriveInfo]);
     return (
         <View style={styles.header}>
-            <SimpleLineIcons name="menu" size={24} color="black" />
+            <SimpleLineIcons name="menu" size={24} color="black" style={{ width: "30%", borderColor: "black" }} />
             <View style={styles.locationSection}>
                 <Text style={styles.targetLoacation}>
                     {currentLocation}
@@ -93,13 +112,20 @@ const Header = () => {
                 </Text>
                 <AntDesign name="caretdown" size={12} color="gray" />
             </View>
-            <TouchableOpacity
-                onPress={() => {
-                    requestPermissions().then((res) => getLocation(res));
-                }}
-            >
-                <MaterialCommunityIcons name="map-marker-outline" size={24} color="black" />
-            </TouchableOpacity>
+            <View style={styles.iconSection}>
+                <TouchableOpacity
+                    onPress={() => {
+                        requestPermissions().then((res) => getLocation(res));
+                    }}
+                >
+                    <MaterialCommunityIcons name="map-marker-outline" size={24} color="black" />
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => getBusStationInfo()} style={{ marginLeft: 10 }}>
+                    <Animated.View style={{ transform: [{ rotate: spin }] }}>
+                        <Feather name="refresh-cw" size={18} color={`${busSlice.loading ? "blue" : "black"}`} />
+                    </Animated.View>
+                </TouchableOpacity>
+            </View>
         </View>
     );
 };
@@ -118,8 +144,17 @@ const styles = StyleSheet.create({
         fontSize: 20,
     },
     locationSection: {
+        paddingLeft: 3,
         flexDirection: "row",
         alignItems: "center",
+        justifyContent: "center",
+        width: "40%",
+    },
+    iconSection: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "flex-end",
+        width: "30%",
     },
 });
 

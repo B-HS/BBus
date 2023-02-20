@@ -70,3 +70,18 @@ export interface busDetailInfo {
     H_MIN: string;
     H_MAX: string;
 }
+
+export interface eachBusLocationAndDetail {
+    EVENT_CD: number;
+    LOW_PLATE_TP: number;
+    MOBI_NUM: number;
+    PLATE_NO: string;
+    ROUTETYPE: string;
+    ROUTE_ID: number;
+    ROUTE_NM: string;
+    ROUTE_STAT: number;
+    STATION_ID: number;
+    STATION_NM: string;
+    STATION_ORD: number;
+    TUR: string;
+}

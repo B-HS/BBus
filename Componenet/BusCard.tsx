@@ -8,7 +8,7 @@ interface busCardProps {
     busInfo: UIArriveInfoText;
 }
 
-const BusCard = ({busInfo}: busCardProps) => {
+const BusCard = ({ busInfo }: busCardProps) => {
     const [modalStatus, setModalStatus] = useState<boolean>(false);
 
     return (
@@ -29,9 +29,9 @@ const BusCard = ({busInfo}: busCardProps) => {
                     <Card.Section content={[{ text: `${busInfo.endLocation} 방면`, text80: true }]} />
                 </View>
                 <View style={styles.detailSection}>
-                    <Card.Section content={[{ text: `${busInfo.leftTime<3?"잠시 후":"약 " + busInfo.leftTime+"분"}`, text50: true }]} />
-                    
-                    <Card.Section content={[{ text: `${busInfo.leftCount}번째 전`, text80: true }]} />
+                    <Card.Section content={[{ text: `${busInfo.leftTime < 3 ? "잠시 후" : "약 " + busInfo.leftTime + "분"}`, text50: true }]} />
+                    <Card.Section content={[{ text: `${busInfo.currentLocation}`, text80: true }]} />
+                    <Card.Section content={[{ text: `앞으로 ${busInfo.leftCount} 정거장`, text80: true }]} />
                 </View>
             </Card>
         </>
@@ -41,15 +41,18 @@ const BusCard = ({busInfo}: busCardProps) => {
 const styles = StyleSheet.create({
     container: {
         justifyContent: "space-between",
+        marginTop: 5,
         marginBottom: 15,
         padding: 15,
     },
-    nameSection:{
-        width:"60%"
+    nameSection: {
+        width: "35%",
+        alignItems: "center",
     },
-    detailSection:{
-        width:"35%"
-    }
+    detailSection: {
+        width: "35%",
+        alignItems: "center",
+    },
 });
 
 export default BusCard;

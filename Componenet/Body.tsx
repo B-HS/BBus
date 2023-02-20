@@ -1,5 +1,5 @@
 import { Entypo } from "@expo/vector-icons";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FlatList, StyleSheet, TextInput } from "react-native";
 import { View } from "react-native-ui-lib";
 import { useAppSelector } from "../store/config";
@@ -9,6 +9,10 @@ const Body = () => {
     const [Search, onChangeSearch] = useState<string>("");
     const tmpData = [{ key: "113" }, { key: "115" }, { key: "110" }, { key: "111" }, { key: "112" }, { key: "116" }, { key: "120" }, { key: "54" }, { key: "250" }, { key: "253" }];
     const busInfo = useAppSelector(state=>state.busSlice)
+    useEffect(()=>{
+        console.log("busLoaded!");
+        
+    }, [busInfo.busList])
     return (
         <View style={styles.container}>
             <View style={styles.searchArea}>

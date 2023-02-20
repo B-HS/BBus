@@ -1,23 +1,41 @@
-import { XMLParser } from "fast-xml-parser";
 import { PRIVATE_KEY } from "@env";
-import { busDetailInfo, BusInfo, RefectoredBusInfo, StationArriveDetail, StationListDetail, UIArriveInfoText } from "../../types/businfo";
+import { XMLParser } from "fast-xml-parser";
+import { BusInfo, eachBusLocationAndDetail, RefectoredBusInfo, StationArriveDetail, StationListDetail, UIArriveInfoText } from "../../types/businfo";
 const parser = new XMLParser();
-const completeUIArriveInfo = async (arriveInfo: StationArriveDetail[], refectoredBusinfo: RefectoredBusInfo[], stationInfo: StationListDetail[]) => {
-    const actualArrivingBusList: StationArriveDetail[] = arriveInfo.filter((v) => v.ARRV_VH_ID !== 0);
+const completeUIArriveInfo = async (arriveInfo: StationArriveDetail[], refectoredBusinfo: RefectoredBusInfo[]) => {
+    if (arriveInfo.length == 0 || refectoredBusinfo.length == 0) {
+        return [];
+    }
+    let actualArrivingBusList: StationArriveDetail[] = arriveInfo
+        .filter((v) => v.ARRV_VH_ID !== 0)
+        .reduce((acc:StationArriveDetail[], current)=>{
+            if(acc.findIndex(({ ARRV_VH_ID })=> ARRV_VH_ID === current.ARRV_VH_ID) === -1){
+                acc.push(current)
+            }
+            return acc;
+        }, [])
     const resultInfo: UIArriveInfoText[] = [];
+    console.log("start");
     for (const arvList of actualArrivingBusList) {
+        const tmpCurrentLocation: eachBusLocationAndDetail[] = await getBusLocationDetail(arvList.ROUTE_ID);
+        const currentLocation = tmpCurrentLocation.filter((v: eachBusLocationAndDetail) => {
+            if (v.EVENT_CD != null && v.STATION_ORD == arvList.STATION_ORD - arvList.LEFT_STATION) {
+                return v;
+            }
+        })[0].STATION_NM;
         refectoredBusinfo
             .filter((info) => info.busRouterId == arvList.ROUTE_ID)
-            .forEach((v) => {
+            .forEach(async (v) => {
                 resultInfo.push({
                     name: v.busNumber,
                     leftCount: arvList.LEFT_STATION,
                     endLocation: "보류",
-                    currentLocation: "보류",
+                    currentLocation: currentLocation,
                     leftTime: Math.round(arvList.PREDICT_TRAV_TM / 60),
                 });
             });
     }
+    console.log("end");
     return resultInfo
         .sort(function (a, b) {
             return (a.name as number) - (b.name as number);
@@ -34,7 +52,7 @@ const getBusstationInformation = async () => {
         .then((res) => {
             let newJsonObj: StationListDetail[] = [];
             newJsonObj.push(JSON.parse(JSON.stringify(res)));
-            return JSON.parse(JSON.stringify(newJsonObj[0]));
+            return JSON.parse(JSON.stringify(newJsonObj[0])) as StationListDetail[];
         });
 };
 
@@ -67,11 +85,16 @@ const getBusInfoList = async () => {
         });
 };
 
-/** BUSPOSITION 받아서 비교해보고 다시시작
- * http://openapi.changwon.go.kr/rest/bis/BusPosition/?serviceKey=${PRIVATE_KEY}&route=${ROUTE_ID}
- */
-
-
+const getBusPosition = async (routeId: number) => {
+    return await fetch(`http://openapi.changwon.go.kr/rest/bis/BusPosition/?serviceKey=${PRIVATE_KEY}&route=${routeId}`)
+        .then((res) => res.text())
+        .then(async (res) => parser.parse(res).ServiceResult.MsgBody.BusPositionList.row)
+        .then((res) => {
+            let newJsonObj: any[] = [];
+            newJsonObj.push(JSON.parse(JSON.stringify(res)));
+            return JSON.parse(JSON.stringify(newJsonObj[0]));
+        });
+};
 
 const getBusLocationDetail = async (routeId: number) => {
     return await fetch(`http://openapi.changwon.go.kr/rest/bis/BusLocation/?serviceKey=${PRIVATE_KEY}&route=${routeId}`)
@@ -108,4 +131,4 @@ const getNearestStationByCurrentLocationFromStationList = async (list: StationLi
     return resultLocation as StationListDetail;
 };
 
-export default { getBusstationInformation, getNearestStationByCurrentLocationFromStationList, getBusArriveInfoByStationId, getBusInfoList, completeUIArriveInfo };
+export default { getBusstationInformation, getNearestStationByCurrentLocationFromStationList, getBusArriveInfoByStationId, getBusInfoList, completeUIArriveInfo, getBusPosition, getBusLocationDetail };

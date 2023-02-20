@@ -19,7 +19,10 @@ export const busSlice = createSlice({
         setBusList: (state, action: PayloadAction<UIArriveInfoText[]>) => {
             state.busList = [...action.payload];
         },
+        setLoading: (state, action: PayloadAction<boolean>)=>{
+            state.loading = action.payload
+        }
     },
 });
-export const { setBusList } = busSlice.actions;
+export const { setBusList, setLoading } = busSlice.actions;
 export default busSlice.reducer;
