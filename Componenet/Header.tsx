@@ -48,7 +48,7 @@ const Header = () => {
     });
 
     const setBusUIInfo = async () => {
-        const result = await BusLocation.completeUIArriveInfo(busArriveInfo, busInfoList);
+        const result = await BusLocation.completeUIArriveInfo(busArriveInfo, busInfoList, busStationInfo);
         dispatch(setBusList(result));
     };
 

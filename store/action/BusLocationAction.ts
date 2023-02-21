@@ -2,23 +2,32 @@ import { PRIVATE_KEY } from "@env";
 import { XMLParser } from "fast-xml-parser";
 import { BusInfo, eachBusLocationAndDetail, RefectoredBusInfo, StationArriveDetail, StationListDetail, UIArriveInfoText } from "../../types/businfo";
 const parser = new XMLParser();
-const completeUIArriveInfo = async (arriveInfo: StationArriveDetail[], refectoredBusinfo: RefectoredBusInfo[]) => {
-    if (arriveInfo.length == 0 || refectoredBusinfo.length == 0) {
+const completeUIArriveInfo = async (arriveInfo: StationArriveDetail[], refectoredBusinfo: RefectoredBusInfo[], busStationInfo: StationListDetail[]) => {
+    if (arriveInfo.length == 0 || refectoredBusinfo.length == 0 || busStationInfo.length == 0) {
         return [];
     }
+
     let actualArrivingBusList: StationArriveDetail[] = arriveInfo
         .filter((v) => v.ARRV_VH_ID !== 0)
-        .reduce((acc:StationArriveDetail[], current)=>{
-            if(acc.findIndex(({ ARRV_VH_ID })=> ARRV_VH_ID === current.ARRV_VH_ID) === -1){
-                acc.push(current)
+        .reduce((acc: StationArriveDetail[], current) => {
+            if (acc.findIndex(({ ARRV_VH_ID }) => ARRV_VH_ID === current.ARRV_VH_ID) === -1) {
+                acc.push(current);
             }
             return acc;
-        }, [])
+        }, []);
     const resultInfo: UIArriveInfoText[] = [];
     console.log("start");
     for (const arvList of actualArrivingBusList) {
+        let endPoint = "";
         const tmpCurrentLocation: eachBusLocationAndDetail[] = await getBusLocationDetail(arvList.ROUTE_ID);
         const currentLocation = tmpCurrentLocation.filter((v: eachBusLocationAndDetail) => {
+            if (v.TUR === "T") {
+                if (arvList.UPDN_DIR == 0) {
+                    endPoint = v.STATION_NM;
+                } else {
+                    endPoint = tmpCurrentLocation[0].STATION_NM
+                }
+            }
             if (v.EVENT_CD != null && v.STATION_ORD == arvList.STATION_ORD - arvList.LEFT_STATION) {
                 return v;
             }
@@ -29,9 +38,10 @@ const completeUIArriveInfo = async (arriveInfo: StationArriveDetail[], refectore
                 resultInfo.push({
                     name: v.busNumber,
                     leftCount: arvList.LEFT_STATION,
-                    endLocation: "보류",
+                    endLocation: endPoint,
                     currentLocation: currentLocation,
                     leftTime: Math.round(arvList.PREDICT_TRAV_TM / 60),
+                    keyword: tmpCurrentLocation.map(v=>v.STATION_NM)
                 });
             });
     }

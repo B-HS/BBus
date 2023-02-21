@@ -1,25 +1,46 @@
 import { Entypo } from "@expo/vector-icons";
-import { useEffect, useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
 import { FlatList, StyleSheet, TextInput } from "react-native";
 import { View } from "react-native-ui-lib";
 import { useAppSelector } from "../store/config";
+import { UIArriveInfoText } from "../types/businfo";
 import BusCard from "./BusCard";
 
 const Body = () => {
     const [Search, onChangeSearch] = useState<string>("");
-    const tmpData = [{ key: "113" }, { key: "115" }, { key: "110" }, { key: "111" }, { key: "112" }, { key: "116" }, { key: "120" }, { key: "54" }, { key: "250" }, { key: "253" }];
-    const busInfo = useAppSelector(state=>state.busSlice)
-    useEffect(()=>{
-        console.log("busLoaded!");
-        
-    }, [busInfo.busList])
+    const [keyword, setKeyword] = useState<string>("");
+    const busInfo = useAppSelector((state) => state.busSlice);
+    const [filteredBusInfo, setFilteredBusInfo] = useState<UIArriveInfoText[]>();
+    useEffect(() => {
+        setFilteredBusInfo(busInfo.busList);
+    }, [busInfo.busList]);
+
+    useEffect(() => {
+        if (keyword.length === 0) {
+            setFilteredBusInfo(busInfo.busList);
+        } else {
+            setFilteredBusInfo(
+                busInfo.busList.filter((v) => {
+                    if (v.name.toString() === keyword || v.keyword?.filter((v) => v == keyword).length > 0) {
+                        return true;
+                    } else false;
+                })
+            );
+        }
+    }, [keyword]);
+
+    const keywordFilter = (text: string) => {
+        onChangeSearch(text);
+        setKeyword(text);
+    };
+
     return (
         <View style={styles.container}>
             <View style={styles.searchArea}>
                 <Entypo name="magnifying-glass" size={24} color="black" style={{ marginRight: 15 }} />
-                <TextInput style={styles.input} onChangeText={onChangeSearch} value={Search} placeholder="버스 혹은 목적지" keyboardType="number-pad" />
+                <TextInput style={styles.input} onChangeText={(text: string) => keywordFilter(text)} value={Search} placeholder="버스 혹은 목적지" keyboardType="number-pad" />
             </View>
-            <FlatList style={styles.flatList} data={busInfo.busList} renderItem={({ item }) => <BusCard busInfo={item} />} />
+            <FlatList style={styles.flatList} data={filteredBusInfo} renderItem={({ item }) => <BusCard busInfo={item} />} />
         </View>
     );
 };

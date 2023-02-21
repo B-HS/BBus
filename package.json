@@ -52,6 +52,7 @@
     "preset": "react-native"
   },
   "overrides": {
-    "react-native-gesture-handler": "^2.9.0"
+    "react-native-gesture-handler": "^2.9.0",
+    "react-devtools-core": "~4.25.0"
   }
 }
