@@ -19,3 +19,6 @@
 > 다이나믹 아일랜드 적용
 - https://github.com/hoaphantn7604/react-native-dynamic-island-master<br>
 ㄴ 알람 상세정보를 여기다 표시
+##
+현재 진행상황<br>
+<img src="https://user-images.githubusercontent.com/49316060/220129574-d11cac17-5a7f-4374-86e9-7901e45e5471.gif" width="300px" alt="preview">
