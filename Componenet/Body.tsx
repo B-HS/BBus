@@ -1,5 +1,5 @@
 import { Entypo } from "@expo/vector-icons";
-import { ChangeEvent, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { FlatList, StyleSheet, TextInput } from "react-native";
 import { View } from "react-native-ui-lib";
 import { useAppSelector } from "../store/config";
@@ -21,7 +21,7 @@ const Body = () => {
         } else {
             setFilteredBusInfo(
                 busInfo.busList.filter((v) => {
-                    if (v.name.toString() === keyword || v.keyword?.filter((v) => v == keyword).length > 0) {
+                    if (v.name.toString() === keyword || v.detailInfo.filter((v) => v.STATION_NM.indexOf(keyword) !== -1).length > 0) {
                         return true;
                     } else false;
                 })
@@ -40,7 +40,7 @@ const Body = () => {
                 <Entypo name="magnifying-glass" size={24} color="black" style={{ marginRight: 15 }} />
                 <TextInput style={styles.input} onChangeText={(text: string) => keywordFilter(text)} value={Search} placeholder="버스 혹은 목적지" keyboardType="number-pad" />
             </View>
-            <FlatList style={styles.flatList} data={filteredBusInfo} renderItem={({ item }) => <BusCard busInfo={item} />} />
+            <FlatList style={styles.flatList} data={filteredBusInfo} renderItem={({ item }) => <BusCard busInfo={item} keyword={keyword} />} />
         </View>
     );
 };

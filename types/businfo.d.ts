@@ -50,7 +50,11 @@ export interface UIArriveInfoText {
     leftCount: number;
     currentLocation: string;
     endLocation: string;
-    keyword: string[];
+    detailInfo: eachBusLocationAndDetail[]
+    targetNumber: number
+    updwn:number,
+    trnNumber:number
+
 }
 
 export interface busDetailInfo {

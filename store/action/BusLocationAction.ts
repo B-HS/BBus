@@ -19,19 +19,24 @@ const completeUIArriveInfo = async (arriveInfo: StationArriveDetail[], refectore
     console.log("start");
     for (const arvList of actualArrivingBusList) {
         let endPoint = "";
+        let trnNumber = 0
         const tmpCurrentLocation: eachBusLocationAndDetail[] = await getBusLocationDetail(arvList.ROUTE_ID);
         const currentLocation = tmpCurrentLocation.filter((v: eachBusLocationAndDetail) => {
             if (v.TUR === "T") {
                 if (arvList.UPDN_DIR == 0) {
                     endPoint = v.STATION_NM;
+                    trnNumber = v.STATION_ORD
                 } else {
                     endPoint = tmpCurrentLocation[0].STATION_NM
+                    trnNumber = tmpCurrentLocation[0].STATION_ORD
+                    
                 }
             }
             if (v.EVENT_CD != null && v.STATION_ORD == arvList.STATION_ORD - arvList.LEFT_STATION) {
                 return v;
             }
-        })[0].STATION_NM;
+            
+        })[0].STATION_NM
         refectoredBusinfo
             .filter((info) => info.busRouterId == arvList.ROUTE_ID)
             .forEach(async (v) => {
@@ -41,7 +46,10 @@ const completeUIArriveInfo = async (arriveInfo: StationArriveDetail[], refectore
                     endLocation: endPoint,
                     currentLocation: currentLocation,
                     leftTime: Math.round(arvList.PREDICT_TRAV_TM / 60),
-                    keyword: tmpCurrentLocation.map(v=>v.STATION_NM)
+                    detailInfo: tmpCurrentLocation,
+                    targetNumber: arvList.STATION_ORD,
+                    updwn : arvList.UPDN_DIR,
+                    trnNumber: trnNumber
                 });
             });
     }

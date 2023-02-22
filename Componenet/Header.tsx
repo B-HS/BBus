@@ -11,6 +11,7 @@ import { setBusList, setLoading } from "../store/slice/busSlice";
 
 const Header = () => {
     const [errorMsg, setErrorMsg] = useState<string>("");
+    const [listLoading, setListLoading] = useState<boolean>(false);
     const [currentLocation, setCurrentLocation] = useState<string>("현재위치");
     const [busInfoList, setBusInfoList] = useState<RefectoredBusInfo[]>([]);
     const [busArriveInfo, setBusArriveInfo] = useState<StationArriveDetail[]>([]);
@@ -38,10 +39,10 @@ const Header = () => {
         Animated.timing(spinValue, {
             toValue: 1,
             duration: 10000,
-            useNativeDriver: true
+            useNativeDriver: true,
         })
     ).start();
-    
+
     const spin = spinValue.interpolate({
         inputRange: [0, 1],
         outputRange: ["0deg", "720deg"],
@@ -66,7 +67,7 @@ const Header = () => {
 
     const getBusStationInfo = async () => {
         dispatch(setLoading(true));
-        spinValue.resetAnimation()
+        spinValue.resetAnimation();
         const info: StationListDetail[] = await BusLocation.getBusstationInformation();
         setBusStationInfo(() => [...info]);
     };
@@ -97,10 +98,14 @@ const Header = () => {
     }, [currentStationInfo]);
 
     useEffect(() => {
-        setBusUIInfo().then(() => {
-            dispatch(setLoading(false))
-            spinValue.stopAnimation()
-        });
+        if (!listLoading) {
+            setListLoading(true);
+            setBusUIInfo().then(() => {
+                dispatch(setLoading(false));
+                setListLoading(false);
+                spinValue.stopAnimation();
+            });
+        }
     }, [busArriveInfo]);
     return (
         <View style={styles.header}>

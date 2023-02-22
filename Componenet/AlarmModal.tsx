@@ -1,24 +1,35 @@
 import * as Notifications from "expo-notifications";
 import { Alert, Pressable, StyleSheet } from "react-native";
 import { Modal, Text, View } from "react-native-ui-lib";
-
+import { eachBusLocationAndDetail } from "../types/businfo";
+import { Picker } from "@react-native-picker/picker";
+import { useEffect, useState } from "react";
 interface alarmModal {
     isVisible: boolean;
     closeModal: Function;
+    busRouteInfo: eachBusLocationAndDetail[];
+    selectedStation: number;
 }
 
-const AlarmModal = ({ isVisible, closeModal }: alarmModal) => {
+const AlarmModal = ({ isVisible, closeModal, busRouteInfo, selectedStation }: alarmModal) => {
+    const [targetLocation, setTargetLocation] = useState<string>(busRouteInfo[0].STATION_NM);
     const alarmPushing = () => {
         Notifications.scheduleNotificationAsync({
             content: {
-                title: "Time's up!",
-                body: "Change sides!",
+                title: `목적지 도착 알람이 설정되었습니다`,
+                body: `목적지 : ${targetLocation}`,
             },
             trigger: {
-                seconds: 1, //onPress가 클릭이 되면 60초 뒤에 알람이 발생합니다.
+                seconds: 1,
             },
         });
     };
+
+    useEffect(() => {
+        if (selectedStation) {
+            setTargetLocation(busRouteInfo.filter((v) => v.STATION_ID == selectedStation)[0].STATION_NM);
+        }
+    }, [selectedStation]);
 
     Notifications.setNotificationHandler({
         handleNotification: async () => ({
@@ -47,13 +58,24 @@ const AlarmModal = ({ isVisible, closeModal }: alarmModal) => {
             <Modal animationType="slide" transparent={true} visible={isVisible}>
                 <View style={styles.centeredView}>
                     <View style={styles.modalView}>
-                        <Text style={styles.modalText}>Hello World!</Text>
+                        <Text style={styles.modalText}>목적지 설정</Text>
+                        <Picker style={styles.picker} selectedValue={targetLocation} onValueChange={(item) => setTargetLocation(item)}>
+                            {busRouteInfo.map((v, i) => {
+                                return <Picker.Item key={i} value={v.STATION_NM} label={v.STATION_NM} />;
+                            })}
+                        </Picker>
                         <View style={{ width: "75%", flexDirection: "row", justifyContent: "space-between" }}>
                             <Pressable style={styles.button} onPress={() => closeModal()}>
-                                <Text style={styles.textStyle}>Hide Modal</Text>
+                                <Text style={styles.textStyle}>취소</Text>
                             </Pressable>
-                            <Pressable style={styles.button} onPress={() => setAlarm()}>
-                                <Text style={styles.textStyle}>ALARRRRRRRm</Text>
+                            <Pressable
+                                style={styles.button}
+                                onPress={() => {
+                                    console.log(busRouteInfo.filter((v) => v.STATION_NM == targetLocation));
+                                    setAlarm();
+                                }}
+                            >
+                                <Text style={styles.textStyle}>설정</Text>
                             </Pressable>
                         </View>
                     </View>
@@ -64,9 +86,14 @@ const AlarmModal = ({ isVisible, closeModal }: alarmModal) => {
 };
 
 const styles = StyleSheet.create({
+    picker: {
+        width: "100%",
+    },
     centeredView: {
         flex: 1,
-        paddingVertical: 10,
+        position: "absolute",
+        top: "50%",
+        width: "100%",
         justifyContent: "center",
         alignItems: "center",
         marginTop: 22,
@@ -96,11 +123,12 @@ const styles = StyleSheet.create({
         elevation: 2,
     },
     textStyle: {
+        fontSize: 18,
         fontWeight: "bold",
         textAlign: "center",
     },
     modalText: {
-        marginBottom: 15,
+        fontSize: 24,
         textAlign: "center",
     },
 });
