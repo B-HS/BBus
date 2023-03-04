@@ -1,4 +1,11 @@
 {
   "name": "bbusrn",
-  "displayName": "bbusrn"
+  "displayName": "bbusrn",
+  "expo": {
+    "ios": {
+      "infoPlist": {
+        "UIBackgroundModes": ["location", "fetch"]
+      }
+    }
+  }
 }
