@@ -8,9 +8,10 @@ import BusCardInfo from "./BusCardInfo";
 interface busCardProps {
     busInfo: UIArriveInfoText;
     keyword?: string;
+    target:Function
 }
 
-const BusCard = ({ busInfo, keyword }: busCardProps) => {
+const BusCard = ({ busInfo, keyword, target }: busCardProps) => {
     const [modalStatus, setModalStatus] = useState<boolean>(false);
     const [selectedBus, setSelectedBus] = useState<number>(0);
     const filteredBusInfo = () => {
@@ -33,7 +34,7 @@ const BusCard = ({ busInfo, keyword }: busCardProps) => {
     };
     return (
         <>
-            {modalStatus && <AlarmModal isVisible={modalStatus} closeModal={setModalStatus} busRouteInfo={filteredBusInfo()} selectedStation={selectedBus} />}
+            {modalStatus && <AlarmModal isVisible={modalStatus} closeModal={setModalStatus} busRouteInfo={filteredBusInfo()} selectedStation={selectedBus} targetName={target} />}
             {!keyword && (
                 <TouchableOpacity onPress={() => setModalStatus(true)}>
                     <BusCardInfo busInfo={busInfo} />

@@ -1,9 +1,8 @@
 import { AntDesign, Feather, MaterialCommunityIcons, SimpleLineIcons } from "@expo/vector-icons";
 import * as Location from "expo-location";
-import * as TaskManager from "expo-task-manager";
 import { LocationObject } from "expo-location";
 import React, { useEffect, useRef, useState } from "react";
-import { Animated, AppState, StyleSheet, Text, TouchableOpacity } from "react-native";
+import { Animated, StyleSheet, Text, TouchableOpacity } from "react-native";
 import { View } from "react-native-ui-lib";
 import BusLocation from "../store/action/BusLocationAction";
 import { useAppDispatch, useAppSelector } from "../store/config";
@@ -18,8 +17,6 @@ const Header = () => {
     const [busArriveInfo, setBusArriveInfo] = useState<StationArriveDetail[]>([]);
     const [busStationInfo, setBusStationInfo] = useState<StationListDetail[]>([]);
     const [currentStationInfo, setCurrentStationInfo] = useState<StationListDetail>();
-    const [background, setBacground] = useState<boolean>(false);
-    const [bLocating, setBLocating] = useState<boolean>(false);
     const spinValue = useRef(new Animated.Value(0)).current;
     const busSlice = useAppSelector((state) => state.busSlice);
     const dispatch = useAppDispatch();
@@ -40,26 +37,6 @@ const Header = () => {
             }
         }
     };
-    const [time, setTime] = useState<string>("0");
-    TaskManager.defineTask("backTracking", ({ data, error }) => {
-        console.log(time);
-
-        if (!bLocating) {
-            Location.getCurrentPositionAsync().then(async (loc) => {
-                const nearestStationInfo: StationListDetail = await BusLocation.getNearestStationByCurrentLocationFromStationList(busStationInfo, loc?.coords.longitude, loc?.coords.latitude);
-                setCurrentLocation(nearestStationInfo.STATION_NM);
-                setCurrentStationInfo(nearestStationInfo);
-                console.log("=========================");
-                console.log(currentLocation);
-                console.log(currentStationInfo);
-                console.log("=========================");
-            });
-        }
-        if (error) {
-            console.log(error.message);
-            return;
-        }
-    });
 
     Animated.loop(
         Animated.timing(spinValue, {
@@ -88,14 +65,14 @@ const Header = () => {
 
     const getBusInfoList = async () => {
         const info = await BusLocation.getBusInfoList();
-        setBusInfoList(() => [...info]);
+        setBusInfoList(() => info);
     };
 
     const getBusStationInfo = async () => {
         dispatch(setLoading(true));
         spinValue.resetAnimation();
         const info: StationListDetail[] = await BusLocation.getBusstationInformation();
-        setBusStationInfo(() => [...info]);
+        setBusStationInfo(() => info);
     };
 
     const getLocation = async (loc?: LocationObject) => {
@@ -109,28 +86,22 @@ const Header = () => {
         }
     };
     useEffect(() => {
-        if (!background) {
-            getBusStationInfo();
-            getBusInfoList();
-        }
+        getBusStationInfo();
+        getBusInfoList();
     }, []);
 
     useEffect(() => {
-        if (!background) {
-            requestPermissions().then((res) => {
-                getLocation(res);
-            });
-        }
+        requestPermissions().then((res) => {
+            getLocation(res);
+        });
     }, [busStationInfo]);
 
     useEffect(() => {
-        if (!background) {
-            getBusArriveInfo();
-        }
+        getBusArriveInfo();
     }, [currentStationInfo]);
 
     useEffect(() => {
-        if (!listLoading && !background) {
+        if (!listLoading) {
             setListLoading(true);
             setBusUIInfo().then(() => {
                 dispatch(setLoading(false));
@@ -140,21 +111,6 @@ const Header = () => {
         }
     }, [busArriveInfo]);
 
-    useEffect(() => {
-        console.log(AppState.currentState);
-        AppState.addEventListener("change", () => {
-            if (AppState.currentState === "background") {
-                setBacground(true);
-                let time = new Date();
-                setTime(time.toISOString());
-                Location.startLocationUpdatesAsync("backTracking", { showsBackgroundLocationIndicator: true, deferredUpdatesTimeout:10000 });
-            }
-            if (AppState.currentState === "active") {
-                setBacground(false);
-                Location.stopLocationUpdatesAsync("backTracking");
-            }
-        });
-    }, []);
     return (
         <View style={styles.header}>
             <SimpleLineIcons name="menu" size={24} color="black" style={{ width: "30%", borderColor: "black" }} />

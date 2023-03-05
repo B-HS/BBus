@@ -6,7 +6,7 @@ import { useAppSelector } from "../store/config";
 import { UIArriveInfoText } from "../types/businfo";
 import BusCard from "./BusCard";
 
-const Body = () => {
+const Body = ({target}:{target:Function}) => {
     const [Search, onChangeSearch] = useState<string>("");
     const [keyword, setKeyword] = useState<string>("");
     const busInfo = useAppSelector((state) => state.busSlice);
@@ -40,7 +40,7 @@ const Body = () => {
                 <Entypo name="magnifying-glass" size={24} color="black" style={{ marginRight: 15 }} />
                 <TextInput style={styles.input} onChangeText={(text: string) => keywordFilter(text)} value={Search} placeholder="버스 혹은 목적지" keyboardType="number-pad" />
             </View>
-            <FlatList style={styles.flatList} data={filteredBusInfo} renderItem={({ item }) => <BusCard busInfo={item} keyword={keyword} />} />
+            <FlatList style={styles.flatList} data={filteredBusInfo} renderItem={({ item }) => <BusCard busInfo={item} keyword={keyword} target={target}/>} />
         </View>
     );
 };

@@ -1,18 +1,23 @@
 import * as Notifications from "expo-notifications";
+import * as Location from "expo-location";
 import { Alert, Pressable, StyleSheet } from "react-native";
 import { Modal, Text, View } from "react-native-ui-lib";
 import { eachBusLocationAndDetail } from "../types/businfo";
 import { Picker } from "@react-native-picker/picker";
 import { useEffect, useState } from "react";
+import { useAppDispatch } from "../store/config";
+import { setTargetLocationInfo } from "../store/slice/busSlice";
 interface alarmModal {
     isVisible: boolean;
     closeModal: Function;
     busRouteInfo: eachBusLocationAndDetail[];
     selectedStation: number;
+    targetName: Function;
 }
 
-const AlarmModal = ({ isVisible, closeModal, busRouteInfo, selectedStation }: alarmModal) => {
+const AlarmModal = ({ isVisible, closeModal, busRouteInfo, selectedStation, targetName }: alarmModal) => {
     const [targetLocation, setTargetLocation] = useState<string>(busRouteInfo[0].STATION_NM);
+    const dispatch = useAppDispatch();
     const alarmPushing = () => {
         Notifications.scheduleNotificationAsync({
             content: {
@@ -51,6 +56,8 @@ const AlarmModal = ({ isVisible, closeModal, busRouteInfo, selectedStation }: al
             return;
         }
         alarmPushing();
+
+        Location.startLocationUpdatesAsync("trackInfo");
     };
 
     return (
@@ -71,8 +78,11 @@ const AlarmModal = ({ isVisible, closeModal, busRouteInfo, selectedStation }: al
                             <Pressable
                                 style={styles.button}
                                 onPress={() => {
-                                    console.log(busRouteInfo.filter((v) => v.STATION_NM == targetLocation));
+                                    const target = busRouteInfo.filter((v) => v.STATION_NM == targetLocation);
+                                    dispatch(setTargetLocationInfo(target[0]));
                                     setAlarm();
+                                    targetName({name: target[0].STATION_NM, list: busRouteInfo})
+                                    console.log(target);
                                 }}
                             >
                                 <Text style={styles.textStyle}>설정</Text>

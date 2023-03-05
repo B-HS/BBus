@@ -1,7 +1,6 @@
 import { PRIVATE_KEY } from "@env";
 import { XMLParser } from "fast-xml-parser";
 import { BusInfo, eachBusLocationAndDetail, RefectoredBusInfo, StationArriveDetail, StationListDetail, UIArriveInfoText } from "../../types/businfo";
-import * as TaskManager from "expo-task-manager";
 const parser = new XMLParser();
 const completeUIArriveInfo = async (arriveInfo: StationArriveDetail[], refectoredBusinfo: RefectoredBusInfo[], busStationInfo: StationListDetail[]) => {
     if (arriveInfo.length == 0 || refectoredBusinfo.length == 0 || busStationInfo.length == 0) {
