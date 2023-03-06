@@ -12,17 +12,17 @@ import { useEffect, useState } from "react";
 import { eachBusLocationAndDetail, StationListDetail } from "./types/businfo";
 const App = () => {
     const [currentStationInfo, setCurrentStationInfo] = useState<StationListDetail>();
-    const [target, setTarget] = useState<{ name: string; list: eachBusLocationAndDetail[] }>();
-    const [leftCount, setLeftCount] = useState<number>(0);
+    const [target, setTarget] = useState<{ name: string; list: eachBusLocationAndDetail[] }>({name:"", list:[]});
     TaskManager.defineTask("trackInfo", async ({ data, error }) => {
         const info = JSON.parse(JSON.stringify(data))["locations"][0].coords as LocationObjectCoords;
         const listInfo: StationListDetail[] = await BusLocationAction.getBusstationInformation();
         const nearestStationInfo: StationListDetail = await BusLocationAction.getNearestStationByCurrentLocationFromStationList(listInfo, info.longitude, info.latitude);
         setCurrentStationInfo(nearestStationInfo);
-        const leftnum = target?.list.filter(v=>v.STATION_NM!=currentStationInfo?.STATION_NM).length
-        setLeftCount(leftnum?leftnum:0)
-        console.log(target);
-        console.log(target?.list);
+        console.log(target.list.length-target.list.findIndex(v=>v.STATION_NM=nearestStationInfo.STATION_NM));
+        
+        
+
+
         if (error) {
             console.log(error.message);
         }
@@ -30,7 +30,9 @@ const App = () => {
 
     useEffect(() => {
         console.log(currentStationInfo?.STATION_NM);
-    }, [currentStationInfo]);
+        console.log(target);
+        
+    }, [currentStationInfo, target]);
 
     return (
         <Provider store={store}>

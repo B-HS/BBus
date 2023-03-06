@@ -56,8 +56,21 @@ const AlarmModal = ({ isVisible, closeModal, busRouteInfo, selectedStation, targ
             return;
         }
         alarmPushing();
-
         Location.startLocationUpdatesAsync("trackInfo");
+    };
+
+    const targetFiltering = (list: eachBusLocationAndDetail[], targetName: string) => {
+        let i = 0;
+        let filtered: eachBusLocationAndDetail[] = [];
+        while (1) {
+            if (list[i].STATION_NM == targetName || i > 200) {
+                filtered.push(list[i]);
+                break;
+            }
+            console.log(i);
+            filtered.push(list[i++]);
+        }
+        return filtered;
     };
 
     return (
@@ -73,16 +86,17 @@ const AlarmModal = ({ isVisible, closeModal, busRouteInfo, selectedStation, targ
                         </Picker>
                         <View style={{ width: "75%", flexDirection: "row", justifyContent: "space-between" }}>
                             <Pressable style={styles.button} onPress={() => closeModal()}>
-                                <Text style={styles.textStyle}>취소</Text>
+                                <Text style={styles.textStyle} onPress={() => closeModal()}>
+                                    취소
+                                </Text>
                             </Pressable>
                             <Pressable
                                 style={styles.button}
-                                onPress={() => {
+                                onPress={async () => {
                                     const target = busRouteInfo.filter((v) => v.STATION_NM == targetLocation);
-                                    dispatch(setTargetLocationInfo(target[0]));
-                                    setAlarm();
-                                    targetName({name: target[0].STATION_NM, list: busRouteInfo})
-                                    console.log(target);
+                                    await setAlarm();
+                                    await targetName({ name: target[0].STATION_NM, list: targetFiltering(busRouteInfo, target[0].STATION_NM) });
+                                    await closeModal();
                                 }}
                             >
                                 <Text style={styles.textStyle}>설정</Text>
